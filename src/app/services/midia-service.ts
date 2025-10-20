@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 
 import { environment } from '../../environments/environment';
-import { MidiaApiResponse } from '../models/midia-api-response';
+import {  MidiaApiResponse } from '../models/midia-api-response';
 import { map } from 'rxjs';
 import { TipoMidia } from '../models/tipo-midia';
 
@@ -25,7 +25,38 @@ export class MidiaService {
         },
       })
     .pipe(
-      map((x) => {
+      map(this.mapImages));
+  }
+
+  public selecionarMidiasMaisVotadas(tipo: TipoMidia){
+    const tipoTraduzido = tipo === 'filme' ? 'movie' : 'tv';
+
+    const urlCompleto = `${this.urlBase}/${tipoTraduzido}/top_rated?language=pt-BR`;
+
+    return this.http
+      .get<MidiaApiResponse>(urlCompleto, {
+        headers: {
+          Authorization: environment.apiKey,
+        },
+      })
+    .pipe(
+      map(this.mapImages));
+  }
+
+  public selecionarFilmesEmCartaz(){
+    const urlCompleto = `${this.urlBase}/movie/now_playing?language=pt-BR`;
+
+    return this.http
+      .get<MidiaApiResponse>(urlCompleto, {
+        headers: {
+          Authorization: environment.apiKey,
+        },
+      })
+    .pipe(
+      map(this.mapImages));
+  }
+
+  private mapImages(x: MidiaApiResponse): MidiaApiResponse{
       return{
         ...x,
         results: x.results.map(y => ({
@@ -34,6 +65,5 @@ export class MidiaService {
           backdrop_path: 'https://image.tmdb.org/t/p/original/' + y.backdrop_path,
         })),
       };
-    }));
   }
 }
